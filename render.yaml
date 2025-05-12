@@ -2,8 +2,10 @@ services:
   - type: web
     name: CleanScrape
     env: python
+    region: oregon
+    plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: streamlit run main.py --server.port 10000
+    startCommand: streamlit run main.py --server.port 10000 --server.headless true
     envVars:
       - key: PYTHON_VERSION
         value: 3.10
