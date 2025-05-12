@@ -14,7 +14,7 @@ def scrape_website(website):
     # Chrome options
     options = Options()
     options.add_argument("--start-maximized")
-    # options.add_argument("--headless")  # Uncomment for headless mode
+    options.add_argument("--headless")  
     options.add_argument("--disable-blink-features=AutomationControlled")
 
     # Set up ChromeDriver service
