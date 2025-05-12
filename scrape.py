@@ -12,10 +12,16 @@ IS_RENDER = "RENDER" in os.environ or platform.system() == "Linux"
 # Set the ChromeDriver path and Chrome binary location
 if IS_RENDER:
     CHROMEDRIVER_PATH = shutil.which("chromedriver")
-    CHROME_BINARY_PATH = "/usr/bin/chromium-browser"
+
+    # Try both likely names
+    chrome_paths = ["/usr/bin/google-chrome", "/usr/bin/chromium-browser"]
+    CHROME_BINARY_PATH = next((p for p in chrome_paths if os.path.exists(p)), None)
+
+    if not CHROME_BINARY_PATH:
+        raise FileNotFoundError("Could not find Chrome binary on server.")
 else:
     CHROMEDRIVER_PATH = r"D:\WOrk\AI-Web-Scraper\chromedriver.exe"
-    CHROME_BINARY_PATH = None  # Chrome is installed normally on Windows
+    CHROME_BINARY_PATH = None  # Local Chrome assumed
 
 def scrape_website(website):
     print("Launching Chrome browser...")
@@ -29,7 +35,7 @@ def scrape_website(website):
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-blink-features=AutomationControlled")
-    options.add_argument("--disable-gpu")  # optional for extra compatibility
+    options.add_argument("--disable-gpu")
 
     service = Service(executable_path=CHROMEDRIVER_PATH)
     driver = webdriver.Chrome(service=service, options=options)
@@ -42,12 +48,10 @@ def scrape_website(website):
     finally:
         driver.quit()
 
-
 def extract_body_content(html_content):
     soup = BeautifulSoup(html_content, "html.parser")
     body_content = soup.body
     return str(body_content) if body_content else ""
-
 
 def clean_body_content(body_content):
     soup = BeautifulSoup(body_content, "html.parser")
@@ -56,7 +60,6 @@ def clean_body_content(body_content):
     cleaned_content = soup.get_text(separator="\n")
     cleaned_content = "\n".join(line.strip() for line in cleaned_content.splitlines() if line.strip())
     return cleaned_content
-
 
 def split_dom_content(dom_content, max_length=6000):
     return [dom_content[i:i + max_length] for i in range(0, len(dom_content), max_length)]
